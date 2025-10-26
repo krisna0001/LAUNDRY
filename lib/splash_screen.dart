@@ -1,77 +1,113 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'home_screen.dart'; // Kita akan buat file ini setelah ini
+import 'package:get/get.dart';
+import 'dart:async';
+import 'package:laundry3b1titik0/main_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  // ignore: library_private_types_in_public_api
+  _SplashScreenState createState() => _SplashScreenState();
 }
 
-// Gunakan 'SingleTickerProviderStateMixin' untuk efisiensi animasi
+// ===== 1. TAMBAHKAN 'with SingleTickerProviderStateMixin' =====
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  // 1. Deklarasikan AnimationController dan Animation
+  // ==========================================================
+
+  // ===== 2. DEKLARASIKAN ANIMATION CONTROLLER & ANIMATION =====
   late AnimationController _controller;
-  late Animation<double> _animation;
+  late Animation<double> _fadeAnimation;
+  // ==========================================================
 
   @override
   void initState() {
     super.initState();
 
-    // 2. Inisialisasi controller
+    // ===== 3. INISIALISASI CONTROLLER & ANIMATION =====
     _controller = AnimationController(
-      duration: const Duration(seconds: 2), // Animasi berjalan selama 2 detik
-      vsync: this,
+      duration: const Duration(seconds: 2), // Durasi animasi fade-in
+      vsync: this, // Gunakan 'this' karena sudah ada mixin
     );
-
-    // 3. Inisialisasi animasi dengan efek 'easeIn'
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
-
-    // 4. Mulai animasi
-    _controller.forward();
-
-    // 5. Atur timer untuk pindah ke halaman utama
-    Timer(
-      const Duration(seconds: 3), // Splash screen tampil selama 3 detik
-      () => Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (BuildContext context) => const HomeScreen(),
-        ),
-      ),
+    // Buat animasi curve (dari 0.0 ke 1.0)
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn, // Efek muncul perlahan
     );
+    // ==================================================
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        // Pastikan widget masih ada
+        _controller.forward();
+      }
+    });
+
+    // Timer untuk pindah halaman (tetap sama)
+    Timer(const Duration(seconds: 3), () {
+      Get.off(() => const MainPage());
+    });
   }
 
+  // ===== 4. JANGAN LUPA DISPOSE CONTROLLER =====
   @override
   void dispose() {
-    // 6. Jangan lupa dispose controller saat widget tidak digunakan
-    _controller.dispose();
+    _controller.dispose(); // Hentikan controller saat widget dihapus
     super.dispose();
   }
+  // =============================================
 
   @override
   Widget build(BuildContext context) {
-    // Palet warna yang kita diskusikan
-    // ignore: unused_local_variable
-    const Color primaryBlue = Color(0xFF005f9f);
-    const Color backgroundColor = Color.fromARGB(255, 255, 255, 255);
-
     return Scaffold(
-      backgroundColor: backgroundColor,
-      // GANTI BAGIAN 'body' YANG LAMA DENGAN INI
+      backgroundColor: const Color.fromARGB(
+        255,
+        255,
+        255,
+        255,
+      ), // Warna primer kita
       body: Center(
-        child: FadeTransition(
-          opacity: _animation,
-          child: Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              shape: BoxShape
-                  .rectangle, // Membuat bayangan mengikuti bentuk lingkaran
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // ===== 5. BUNGKUS DENGAN FadeTransition =====
+            FadeTransition(
+              opacity: _fadeAnimation, // Gunakan animasi fade
+              child: Image.asset(
+                'assets/images/logo_3b.png',
+                height: 400,
+                color: Colors.white,
+                colorBlendMode: BlendMode.modulate,
+              ),
             ),
-            child: Image.asset('assets/images/logo_3b.png', width: 200),
-          ),
+            const SizedBox(height: 20),
+            FadeTransition(
+              // Bungkus Teks juga
+              opacity: _fadeAnimation, // Gunakan animasi yang sama
+              child: const Text(
+                'Laundry 3B',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color.fromARGB(255, 0, 0, 0),
+                ),
+              ),
+            ),
+            // =============================================
+            const SizedBox(height: 40),
+            // Loading indicator biarkan saja muncul langsung
+            const SizedBox(
+              height: 15.0,
+              width: 15.0,
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Color.fromARGB(255, 0, 0, 0),
+                ),
+                strokeWidth: 3.0,
+              ),
+            ),
+          ],
         ),
       ),
     );

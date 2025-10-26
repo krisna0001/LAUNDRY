@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'splash_screen.dart'; // Impor file splash screen
+import 'package:get/get.dart'; // <--- Impor Get
+import 'package:laundry3b1titik0/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,13 +11,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    // Ganti MaterialApp menjadi GetMaterialApp
+    return GetMaterialApp( 
       title: 'Laundry 3B',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        // Atur warna primer kustom kita
+        primaryColor: const Color(0xFF005f9f), 
       ),
-      home: const SplashScreen(), // Atur SplashScreen sebagai halaman pertama
       debugShowCheckedModeBanner: false,
+      // Halaman awal tetap SplashScreen
+      home: const SplashScreen(), 
     );
   }
 }

@@ -1,9 +1,9 @@
-// lib/catalog_screen.dart
-
 import 'package:flutter/material.dart';
-import 'detail_screen.dart'; // Pastikan import ini benar
+import 'package:get/get.dart';
+import 'package:laundry3b1titik0/detail_screen.dart'; 
 
-// Model data untuk layanan, sudah bagus, tidak perlu diubah.
+// 1. Buat class sederhana untuk menampung data layanan
+// (Kita akan biarkan class ini di sini untuk sementara agar simpel)
 class LaundryService {
   final String name;
   final String price;
@@ -12,76 +12,65 @@ class LaundryService {
   LaundryService({required this.name, required this.price, required this.icon});
 }
 
-// Halaman utama untuk menampilkan katalog layanan.
 class CatalogScreen extends StatelessWidget {
   const CatalogScreen({super.key});
 
-  // Memindahkan daftar layanan ke sini agar tidak dibuat ulang setiap kali build.
-  static final List<LaundryService> services = [
-    LaundryService(
-      name: 'Cuci Kering Lipat',
-      price: 'Rp 7.000/kg',
-      icon: Icons.local_laundry_service,
-    ),
-    LaundryService(
-      name: 'Setrika Kiloan',
-      price: 'Rp 5.000/kg',
-      icon: Icons.iron,
-    ),
-    LaundryService(
-      name: 'Cuci Satuan Kemeja',
-      price: 'Rp 15.000/pcs',
-      icon: Icons.checkroom,
-    ),
-    LaundryService(
-      name: 'Cuci Bed Cover',
-      price: 'Rp 25.000/pcs',
-      icon: Icons.king_bed,
-    ),
-    LaundryService(
-      name: 'Cuci Sepatu',
-      price: 'Rp 30.000/psg',
-      icon: Icons.ice_skating,
-    ),
-    LaundryService(
-      name: 'Dry Cleaning Jas',
-      price: 'Rp 50.000/pcs',
-      icon: Icons.dry_cleaning,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    // --- MediaQuery untuk responsivitas ---
-    final screenWidth = MediaQuery.of(context).size.width;
-    final int crossAxisCount = screenWidth > 600 ? 3 : 2;
+    // 2. Siapkan daftar layanan laundry
+    final List<LaundryService> services = [
+      LaundryService(name: 'Cuci Kering Lipat', price: 'Rp 7.000/kg', icon: Icons.local_laundry_service),
+      LaundryService(name: 'Setrika Kiloan', price: 'Rp 5.000/kg', icon: Icons.iron),
+      LaundryService(name: 'Cuci Satuan Kemeja', price: 'Rp 15.000/pcs', icon: Icons.checkroom),
+      LaundryService(name: 'Cuci Bed Cover', price: 'Rp 25.000/pcs', icon: Icons.king_bed),
+      LaundryService(name: 'Cuci Sepatu', price: 'Rp 30.000/psg', icon: Icons.ice_skating),
+      LaundryService(name: 'Dry Cleaning Jas', price: 'Rp 50.000/pcs', icon: Icons.dry_cleaning),
+    ];
 
+    // --- Implementasi MediaQuery ---
+    // 3. Dapatkan informasi ukuran layar
+    final Size screenSize = MediaQuery.of(context).size;
+
+    // 4. Tentukan jumlah kolom berdasarkan lebar layar
+    final int crossAxisCount = screenSize.width > 600 ? 3 : 2;
+
+    // ===== KONSEP 2: PENERAPAN HERO (AKHIR) =====
+    // Bungkus seluruh Scaffold dengan Hero
     return Scaffold(
       appBar: AppBar(
         title: const Text('Katalog Layanan'),
         backgroundColor: const Color(0xFF005f9f),
+        elevation: 1,
       ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(12.0), // Padding untuk seluruh grid
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossAxisCount,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.9,
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        // 5. Gunakan GridView.builder untuk menampilkan data
+        child: GridView.builder(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount, 
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 0.9,
+          ),
+          itemCount: services.length,
+          itemBuilder: (context, index) {
+            // 3. Panggil widget ServiceCard
+            return ServiceCard(service: services[index]);
+          },
         ),
-        itemCount: services.length,
-        itemBuilder: (context, index) {
-          // Mengirim data layanan ke ServiceCard
-          return ServiceCard(service: services[index]);
-        },
       ),
     );
+    // ===========================================
   }
 }
 
-// Widget untuk setiap kartu layanan.
+// Letakkan class ini di bawah class CatalogScreen
 class ServiceCard extends StatefulWidget {
-  const ServiceCard({super.key, required this.service});
+  const ServiceCard({
+    super.key,
+    required this.service,
+  });
+
   final LaundryService service;
 
   @override
@@ -93,143 +82,112 @@ class _ServiceCardState extends State<ServiceCard> {
 
   @override
   Widget build(BuildContext context) {
-    // ---- PROPERTI ANIMASI YANG DILEBIHKAN ----
-    final Color cardColor = _isPressed ? Colors.amberAccent : Colors.blueAccent;
-    final Matrix4 transform = _isPressed
-        ? (Matrix4.identity()..scale(0.95)) // Efek MENGECIL agar lebih terlihat
-        : Matrix4.identity();
-    final double shadowBlur = _isPressed ? 20.0 : 8.0;
+    const Color cardColor = Colors.white; // Dibuat statis agar Hero mulus
+    final double elevation = _isPressed ? 8.0 : 2.0;
+    final EdgeInsets padding = _isPressed ? const EdgeInsets.all(16.0) : const EdgeInsets.all(12.0);
 
     return GestureDetector(
-      // ---- BAGIAN PENTING ADA DI SINI ----
-      onTapDown: (_) {
-        print("TAP DOWN DETECTED!"); // Debugging
-        setState(() {
-          _isPressed = true;
-        });
-      },
-      onTapUp: (_) async {
-        print("TAP UP DETECTED!"); // Debugging
-        setState(() {
-          _isPressed = false;
-        });
-        await Future.delayed(
-          const Duration(milliseconds: 300),
-        ); // Jeda lebih lama
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTapUp: (_) async { 
+        setState(() => _isPressed = false);
+        await Future.delayed(const Duration(milliseconds: 150));
         if (mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DetailScreen(service: widget.service),
-            ),
-          );
+          Get.to(() => DetailScreen(service: widget.service));
         }
       },
-      onTapCancel: () {
-        print("TAP CANCEL DETECTED!"); // Debugging
-        setState(() {
-          _isPressed = false;
-        });
-      },
       child: AnimatedContainer(
-        // ---- DURASI ANIMASI DIPERLAMBAT ----
-        duration: const Duration(milliseconds: 250),
+        duration: const Duration(milliseconds: 150),
         curve: Curves.easeInOut,
-        transform: transform, // Menerapkan efek scaling
-        transformAlignment: Alignment.center, // Pastikan scaling dari tengah
+        padding: padding,
         decoration: BoxDecoration(
-          color: cardColor, // Menerapkan perubahan warna
-          borderRadius: BorderRadius.circular(16),
+          color: cardColor,
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
+              // ignore: deprecated_member_use
               color: Colors.black.withOpacity(0.1),
-              blurRadius: shadowBlur, // Menerapkan perubahan bayangan
-              offset: const Offset(0, 5),
+              blurRadius: elevation,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: LayoutBuilder(
-          builder: (context, constraints) {
-            return constraints.maxWidth < 180
-                ? _buildCompactLayout()
-                : _buildWideLayout();
+          builder: (BuildContext context, BoxConstraints constraints) {
+            if (constraints.maxWidth < 180) {
+              return buildCompactCard();
+            } else {
+              return buildWideCard();
+            }
           },
         ),
       ),
     );
   }
 
-  // Bagian ini tidak perlu diubah
-  Widget _buildCompactLayout() {
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Hero(
-            tag: widget.service.name,
-            child: Icon(
-              widget.service.icon,
-              size: 40,
-              color: const Color(0xFF005f9f),
-            ),
+  // ===== PERUBAHAN DI SINI =====
+  Widget buildCompactCard() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Hero(
+          tag: 'service_icon_${widget.service.name}', 
+          child: Material( // <--- TAMBAHKAN INI
+            type: MaterialType.transparency, // <-- Agar transparan
+            child: Icon(widget.service.icon, size: 40, color: const Color(0xFF005f9f)),
           ),
-          const SizedBox(height: 12),
-          Text(
-            widget.service.name,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            widget.service.price,
-            style: TextStyle(color: Colors.grey[700], fontSize: 12),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          widget.service.name,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          widget.service.price,
+          style: TextStyle(color: Colors.grey[700], fontSize: 12),
+        ),
+      ],
     );
   }
+  // =============================
 
-  Widget _buildWideLayout() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        children: [
-          Hero(
-            tag: widget.service.name,
-            child: Icon(
-              widget.service.icon,
-              size: 48,
-              color: const Color(0xFF005f9f),
-            ),
+  // ===== DAN PERUBAHAN DI SINI =====
+  Widget buildWideCard() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Hero(
+          tag: 'service_icon_${widget.service.name}',
+          child: Material( // <--- TAMBAHKAN INI
+            type: MaterialType.transparency, // <-- Agar transparan
+            child: Icon(widget.service.icon, size: 48, color: const Color(0xFF005f9f)),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.service.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  widget.service.price,
-                  style: TextStyle(color: Colors.grey[700], fontSize: 14),
-                ),
-              ],
-            ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.service.name,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                widget.service.price,
+                style: TextStyle(color: Colors.grey[700], fontSize: 14),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
+  // ===============================
 }

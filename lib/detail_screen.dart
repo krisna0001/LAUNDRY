@@ -1,7 +1,7 @@
-// lib/detail_screen.dart
+// Salin dan GANTIKAN seluruh isi file lib/detail_screen.dart
 
 import 'package:flutter/material.dart';
-import 'catalog_screen.dart';
+import 'catalog_screen.dart'; // Impor class LaundryService
 
 class DetailScreen extends StatelessWidget {
   final LaundryService service;
@@ -21,14 +21,19 @@ class DetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // ===== PERUBAHAN DI SINI =====
             Hero(
               tag: 'service_icon_${service.name}',
-              child: Icon(
-                service.icon,
-                size: 120, // Buat ikon lebih besar di sini
-                color: const Color(0xFF005f9f),
+              child: Material( // <--- TAMBAHKAN INI
+                type: MaterialType.transparency, // <-- Agar transparan
+                child: Icon(
+                  service.icon,
+                  size: 120, 
+                  color: const Color(0xFF005f9f),
+                ),
               ),
             ),
+            // =============================
             const SizedBox(height: 24),
             Text(
               service.name,
@@ -41,7 +46,10 @@ class DetailScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               service.price,
-              style: TextStyle(color: Colors.grey[700], fontSize: 20),
+              style: TextStyle(
+                color: Colors.grey[700],
+                fontSize: 20,
+              ),
             ),
             const SizedBox(height: 32),
             Text(
@@ -49,7 +57,7 @@ class DetailScreen extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 16,
-                height: 1.5, // Jarak antar baris
+                height: 1.5,
               ),
             ),
           ],
