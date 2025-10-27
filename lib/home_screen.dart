@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:laundry3b1titik0/catalog_screen.dart';
 import 'package:get/get.dart';
 import 'package:laundry3b1titik0/screens/delivery_screen.dart';
-import 'dart:ui' as ui;
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
