@@ -140,7 +140,7 @@ class DeliveryScreen extends GetView<DeliveryController> {
 
               if (controller.weatherData.value != null) {
                 final weather = controller.weatherData.value!;
-                final advice = controller.getWeatherAdvice(weather.description);
+                final advice = controller.getWeatherAdvice(weather);
                 final timeHttp = controller.fetchTimeHttp.value;
                 final timeDio = controller.fetchTimeDio.value;
                 String fetchTimeText = '';

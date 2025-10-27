@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 import 'package:laundry3b1titik0/models/weather_model.dart';
+import 'package:laundry3b1titik0/models/forecast_model.dart';
+import 'package:collection/collection.dart';
 
 class DeliveryController extends GetxController {
   var isLoading = false.obs;
@@ -14,9 +16,12 @@ class DeliveryController extends GetxController {
   var fetchTimeDio = ''.obs;
   var fetchTimeChain = ''.obs;
 
+  var forecastList = <ForecastItem>[].obs;
+
   final String _apiKey = '70497336d3d17d0f79edd66a0b679ff4';
   final String _cityName = 'Malang';
   late String _apiUrl;
+  late String _forecastApiUrl;
 
   final String _gnewsApiKey = 'GANTI_DENGAN_API_KEY_GNEWS_ANDA';
 
@@ -27,6 +32,22 @@ class DeliveryController extends GetxController {
     super.onInit();
     _apiUrl =
         'https://api.openweathermap.org/data/2.5/weather?q=$_cityName&appid=$_apiKey&units=metric&lang=id';
+    _forecastApiUrl =
+        'https://api.openweathermap.org/data/2.5/forecast?q=$_cityName&appid=$_apiKey&units=metric&lang=id';
+  }
+
+  Future<void> _fetchForecast() async {
+    try {
+      final response = await _dio.get(_forecastApiUrl);
+      if (response.statusCode == 200) {
+        forecastList.value = ForecastModel.fromJson(response.data).list;
+        print('Sukses memuat ${forecastList.length} data perkiraan cuaca.');
+      } else {
+        print('Gagal memuat perkiraan cuaca: ${response.statusMessage}');
+      }
+    } catch (e) {
+      print('Error memuat perkiraan cuaca: ${e.toString()}');
+    }
   }
 
   Future<void> fetchWeatherHttp() async {
@@ -37,6 +58,7 @@ class DeliveryController extends GetxController {
     fetchTimeChain.value = '';
     weatherData.value = null;
     operationalWarning.value = '';
+    forecastList.clear();
     final stopwatch = Stopwatch()..start();
 
     try {
@@ -48,6 +70,7 @@ class DeliveryController extends GetxController {
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         weatherData.value = WeatherModel.fromJson(jsonData);
+        await _fetchForecast();
       } else {
         errorMessage.value =
             'Gagal memuat data (HTTP): Status ${response.statusCode}';
@@ -70,17 +93,19 @@ class DeliveryController extends GetxController {
     fetchTimeChain.value = '';
     weatherData.value = null;
     operationalWarning.value = '';
+    forecastList.clear();
     final stopwatch = Stopwatch()..start();
 
     _dio
         .get(_apiUrl)
-        .then((response) {
+        .then((response) async {
           stopwatch.stop();
           fetchTimeDio.value = '${stopwatch.elapsedMilliseconds} ms';
           print('Eksperimen DIO selesai dalam: ${fetchTimeDio.value}');
 
           if (response.statusCode == 200) {
             weatherData.value = WeatherModel.fromJson(response.data);
+            await _fetchForecast();
           } else {
             errorMessage.value =
                 'Gagal memuat data (Dio): Status ${response.statusCode}';
@@ -125,7 +150,7 @@ class DeliveryController extends GetxController {
 
       if (isWeatherBad) {
         print(
-          'Rantai #1: Cuaca Buruk ($weather.description). Lanjut Cek Berita Darurat...',
+          'Rantai #1: Cuaca Buruk (${weather.description}). Lanjut Cek Berita Darurat...',
         );
 
         final String fromDateTime = DateTime.now()
@@ -152,11 +177,14 @@ class DeliveryController extends GetxController {
               'INFO (Hujan): Cuaca buruk terdeteksi, namun tidak ada laporan berita darurat (banjir/longsor) dalam 12 jam terakhir. Operasional tetap waspada.';
         }
       } else {
-        print('Rantai #1: Cuaca Aman ($weather.description). Rantai Berhenti.');
+        print(
+          'Rantai #1: Cuaca Aman (${weather.description}). Rantai Berhenti.',
+        );
         stopwatch.stop();
         fetchTimeChain.value = '${stopwatch.elapsedMilliseconds} ms';
+
         operationalWarning.value =
-            'INFO: Cuaca Cerah ($weather.description). Operasional normal.';
+            'INFO CUACA SEDANG (${weather.description}). Operasional normal.';
       }
     } catch (e) {
       stopwatch.stop();
@@ -177,19 +205,65 @@ class DeliveryController extends GetxController {
     }
   }
 
-  String getWeatherAdvice(String description) {
-    description = description.toLowerCase();
+  String getWeatherAdvice(WeatherModel weather) {
+    String description = weather.description.toLowerCase();
+    final now = DateTime.now();
 
     if (description.contains('hujan') || description.contains('gerimis')) {
-      return 'REKOMENDASI (Hujan): Prioritaskan pickup di zona rawan macet. Ingatkan kurir bawa jas hujan & perlengkapan anti-air.';
-    } else if (description.contains('cerah')) {
-      return 'INFO (Cerah): Kondisi ideal. Operasional kurir dan penjemuran (jika ada) berjalan normal.';
-    } else if (description.contains('awan')) {
-      return 'WASPADA (Mendung): Potensi hujan sore hari. Percepat jadwal pickup sebelum jam 15:00 jika memungkinkan.';
-    } else if (description.contains('kabut') || description.contains('asap')) {
-      return 'INFO (Berkabut): Jarak pandang kurir mungkin terbatas. Ingatkan tim untuk hati-hati di jalan.';
-    } else {
-      return 'Data cuaca diterima. Belum ada rekomendasi operasional khusus.';
+      return 'REKOMENDASI (Hujan Sekarang): Sedang hujan! Ingatkan kurir bawa jas hujan & perlengkapan anti-air. Prioritaskan pickup di zona rawan macet.';
     }
+    if (description.contains('cerah')) {
+      return 'INFO (Cerah): Kondisi ideal. Operasional kurir dan penjemuran (jika ada) berjalan normal.';
+    }
+
+    if (description.contains('awan') || description.contains('mendung')) {
+      if (forecastList.isEmpty) {
+        return 'INFO (Mendung): Cuaca saat ini mendung. Belum bisa memuat data perkiraan cuaca.';
+      }
+
+      final upcomingForecastsToday = forecastList
+          .where(
+            (item) =>
+                item.dateTime.isAfter(now) && item.dateTime.day == now.day,
+          )
+          .toList();
+
+      if (upcomingForecastsToday.isEmpty) {
+        return 'INFO (Mendung): Cuaca mendung. Sisa hari ini aman (tidak ada perkiraan hujan).';
+      }
+
+      final firstRainEvent = upcomingForecastsToday.firstWhereOrNull(
+        (item) =>
+            item.description.contains('hujan') ||
+            item.description.contains('gerimis'),
+      );
+
+      if (firstRainEvent == null) {
+        return 'INFO (Mendung): Cuaca mendung, namun perkiraan cuaca sisa hari ini **AMAN** (tidak ada tanda hujan). Operasional normal.';
+      } else {
+        final rainStartTime = firstRainEvent.dateTime;
+        final rainTimeStr = '${rainStartTime.hour}:00';
+
+        final clearWeatherAfterRain = forecastList.firstWhereOrNull(
+          (item) =>
+              item.dateTime.isAfter(rainStartTime) &&
+              !(item.description.contains('hujan') ||
+                  item.description.contains('gerimis')),
+        );
+
+        if (clearWeatherAfterRain != null) {
+          final clearTimeStr = '${clearWeatherAfterRain.dateTime.hour}:00';
+          return 'WASPADA (Mendung): Ada potensi hujan hari ini sekitar jam $rainTimeStr. \nREKOMENDASI: Selesaikan pickup sebelum jam itu. \nINFO: Hujan diperkirakan akan reda sekitar jam $clearTimeStr.';
+        } else {
+          return 'WASPADA (Mendung): Ada potensi hujan hari ini sekitar jam $rainTimeStr dan diperkirakan berlangsung lama. \nREKOMENDASI: Selesaikan semua pickup SEBELUM jam $rainTimeStr.';
+        }
+      }
+    }
+
+    if (description.contains('kabut') || description.contains('asap')) {
+      return 'INFO (Berkabut): Jarak pandang kurir mungkin terbatas. Ingatkan tim untuk hati-hati di jalan.';
+    }
+
+    return 'Data cuaca diterima: $description. Belum ada rekomendasi khusus.';
   }
 }
