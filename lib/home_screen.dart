@@ -44,42 +44,30 @@ class HomeScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
-          // Bagian Header Konten (Salam)
           _buildWelcomeHeader(context),
 
-          // "Efek Gantung"
           Transform.translate(
-            offset: const Offset(0.0, -70.0), // Sesuai settingan terakhirmu
+            offset: const Offset(0.0, -70.0),
             child: buildInfoCard(),
           ),
 
-          // Bagian 2: Menu Grid (8 Item)
           _buildMenuSection(context),
 
-          // Jarak antara Menu dan Promo
           const SizedBox(height: 24),
 
-          // Bagian 3: Promo Banner
           _buildPromoSection(),
 
-          // Beri jarak di bawah agar tidak terlalu mepet
           const SizedBox(height: 24),
         ],
       ),
     );
   }
 
-  // WIDGET MODIFIKASI: Teks Salam + Latar Biru
   Widget _buildWelcomeHeader(BuildContext context) {
     const Color primaryColor = Color(0xFF005f9f);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(
-        16.0,
-        16.0,
-        16.0,
-        100.0,
-      ), // Sesuai settingan terakhirmu
+      padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 100.0),
       decoration: const BoxDecoration(
         color: primaryColor,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
@@ -105,7 +93,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // WIDGET MODIFIKASI: Kartu Status (Oranye & Floating)
   Widget buildInfoCard() {
     const Color cardColor = Color.fromARGB(255, 255, 3, 3);
 
@@ -118,7 +105,6 @@ class HomeScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(50),
           boxShadow: [
             BoxShadow(
-              // ignore: deprecated_member_use
               color: cardColor.withOpacity(0.3),
               blurRadius: 10,
               offset: const Offset(0, 5),
@@ -143,9 +129,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             OutlinedButton(
-              onPressed: () {
-                // Aksi untuk 'Lacak Detail'
-              },
+              onPressed: () {},
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
                 side: const BorderSide(color: Colors.white54),
@@ -161,7 +145,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // WIDGET BARU: Wrapper untuk Judul dan Grid Menu
   Widget _buildMenuSection(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -171,11 +154,7 @@ class HomeScreen extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
-            BoxShadow(
-              // ignore: deprecated_member_use
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-            ),
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
           ],
         ),
         child: Column(
@@ -190,14 +169,13 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            buildMenuGrid(context), // Panggil Grid 8 Menu
+            buildMenuGrid(context),
           ],
         ),
       ),
     );
   }
 
-  // WIDGET MODIFIKASI: Grid 8 Menu
   Widget buildMenuGrid(BuildContext context) {
     final List<Map<String, dynamic>> menuItems = [
       {
@@ -234,23 +212,17 @@ class HomeScreen extends StatelessWidget {
       itemBuilder: (context, index) {
         final item = menuItems[index];
 
-        // Buat widget tombol
         final menuButton = HomeMenuButton(
           icon: item['icon'],
           label: item['label'],
           page: item['page'],
         );
 
-        // Jika bukan, kembalikan tombol biasa
         return menuButton;
-        // ===========================================
       },
     );
   }
 
-  // WIDGET buildMenuButton() LAMA DIHAPUS
-
-  // WIDGET BARU: Wrapper untuk Judul dan Banner Promo
   Widget _buildPromoSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -266,13 +238,12 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          buildPromoBanner(), // Panggil Banner yang sudah ada
+          buildPromoBanner(),
         ],
       ),
     );
   }
 
-  // WIDGET UNTUK BAGIAN 3: PROMO BANNER (Tidak berubah, hanya dipanggil)
   Widget buildPromoBanner() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -338,26 +309,19 @@ class _HomeMenuButtonState extends State<HomeMenuButton> {
 
   @override
   Widget build(BuildContext context) {
-    // Tentukan skala dan warna berdasarkan state _isInteracting
     final scale = _isInteracting ? 0.95 : 1.0;
     final bgColor = _isInteracting
-        // ignore: deprecated_member_use
-        ? _primaryColor.withOpacity(0.2) // Warna saat di-hover/tekan
-        // ignore: deprecated_member_use
-        : _primaryColor.withOpacity(0.1); // Warna normal
+        ? _primaryColor.withOpacity(0.2)
+        : _primaryColor.withOpacity(0.1);
 
     return InkWell(
-      // --- Handler untuk deteksi interaksi ---
       onTapDown: (_) => setState(() => _isInteracting = true),
       onTapUp: (_) {
         setState(() => _isInteracting = false);
 
-        // ===== PERUBAHAN DI SINI =====
-        // Jalankan aksi navigasi menggunakan GetX
         if (widget.page != null) {
-          Get.to(() => widget.page!); // <--- Ganti Navigator.push
+          Get.to(() => widget.page!);
         } else {
-          // 2. PERBAIKI NAMA FUNGSI MENJADI 'Get.snackbar'
           Get.snackbar(
             'Segera Hadir',
             'Fitur "${widget.label}" sedang dalam pengembangan.',
@@ -366,12 +330,10 @@ class _HomeMenuButtonState extends State<HomeMenuButton> {
             colorText: Colors.white,
           );
         }
-        // =============================
       },
       onTapCancel: () => setState(() => _isInteracting = false),
       onHover: (isHovering) => setState(() => _isInteracting = isHovering),
 
-      // ----------------------------------------
       borderRadius: BorderRadius.circular(12),
       child: AnimatedScale(
         scale: scale,
@@ -385,7 +347,7 @@ class _HomeMenuButtonState extends State<HomeMenuButton> {
               curve: Curves.easeOut,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: bgColor, // Gunakan warna animasi
+                color: bgColor,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(widget.icon, color: _primaryColor, size: 28),

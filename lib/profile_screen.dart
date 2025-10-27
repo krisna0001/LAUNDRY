@@ -11,10 +11,7 @@ class ProfileScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF005f9f),
       ),
       body: const Center(
-        child: Text(
-          'Halaman Akun Pengguna',
-          style: TextStyle(fontSize: 18),
-        ),
+        child: Text('Halaman Akun Pengguna', style: TextStyle(fontSize: 18)),
       ),
     );
   }

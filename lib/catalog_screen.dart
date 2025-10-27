@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:laundry3b1titik0/detail_screen.dart'; 
+import 'package:laundry3b1titik0/detail_screen.dart';
 
-// 1. Buat class sederhana untuk menampung data layanan
-// (Kita akan biarkan class ini di sini untuk sementara agar simpel)
 class LaundryService {
   final String name;
   final String price;
@@ -17,25 +15,43 @@ class CatalogScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 2. Siapkan daftar layanan laundry
     final List<LaundryService> services = [
-      LaundryService(name: 'Cuci Kering Lipat', price: 'Rp 7.000/kg', icon: Icons.local_laundry_service),
-      LaundryService(name: 'Setrika Kiloan', price: 'Rp 5.000/kg', icon: Icons.iron),
-      LaundryService(name: 'Cuci Satuan Kemeja', price: 'Rp 15.000/pcs', icon: Icons.checkroom),
-      LaundryService(name: 'Cuci Bed Cover', price: 'Rp 25.000/pcs', icon: Icons.king_bed),
-      LaundryService(name: 'Cuci Sepatu', price: 'Rp 30.000/psg', icon: Icons.ice_skating),
-      LaundryService(name: 'Dry Cleaning Jas', price: 'Rp 50.000/pcs', icon: Icons.dry_cleaning),
+      LaundryService(
+        name: 'Cuci Kering Lipat',
+        price: 'Rp 7.000/kg',
+        icon: Icons.local_laundry_service,
+      ),
+      LaundryService(
+        name: 'Setrika Kiloan',
+        price: 'Rp 5.000/kg',
+        icon: Icons.iron,
+      ),
+      LaundryService(
+        name: 'Cuci Satuan Kemeja',
+        price: 'Rp 15.000/pcs',
+        icon: Icons.checkroom,
+      ),
+      LaundryService(
+        name: 'Cuci Bed Cover',
+        price: 'Rp 25.000/pcs',
+        icon: Icons.king_bed,
+      ),
+      LaundryService(
+        name: 'Cuci Sepatu',
+        price: 'Rp 30.000/psg',
+        icon: Icons.ice_skating,
+      ),
+      LaundryService(
+        name: 'Dry Cleaning Jas',
+        price: 'Rp 50.000/pcs',
+        icon: Icons.dry_cleaning,
+      ),
     ];
 
-    // --- Implementasi MediaQuery ---
-    // 3. Dapatkan informasi ukuran layar
     final Size screenSize = MediaQuery.of(context).size;
 
-    // 4. Tentukan jumlah kolom berdasarkan lebar layar
     final int crossAxisCount = screenSize.width > 600 ? 3 : 2;
 
-    // ===== KONSEP 2: PENERAPAN HERO (AKHIR) =====
-    // Bungkus seluruh Scaffold dengan Hero
     return Scaffold(
       appBar: AppBar(
         title: const Text('Katalog Layanan'),
@@ -44,32 +60,25 @@ class CatalogScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        // 5. Gunakan GridView.builder untuk menampilkan data
         child: GridView.builder(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount, 
+            crossAxisCount: crossAxisCount,
             crossAxisSpacing: 8,
             mainAxisSpacing: 8,
             childAspectRatio: 0.9,
           ),
           itemCount: services.length,
           itemBuilder: (context, index) {
-            // 3. Panggil widget ServiceCard
             return ServiceCard(service: services[index]);
           },
         ),
       ),
     );
-    // ===========================================
   }
 }
 
-// Letakkan class ini di bawah class CatalogScreen
 class ServiceCard extends StatefulWidget {
-  const ServiceCard({
-    super.key,
-    required this.service,
-  });
+  const ServiceCard({super.key, required this.service});
 
   final LaundryService service;
 
@@ -82,14 +91,16 @@ class _ServiceCardState extends State<ServiceCard> {
 
   @override
   Widget build(BuildContext context) {
-    const Color cardColor = Colors.white; // Dibuat statis agar Hero mulus
+    const Color cardColor = Colors.white;
     final double elevation = _isPressed ? 8.0 : 2.0;
-    final EdgeInsets padding = _isPressed ? const EdgeInsets.all(16.0) : const EdgeInsets.all(12.0);
+    final EdgeInsets padding = _isPressed
+        ? const EdgeInsets.all(16.0)
+        : const EdgeInsets.all(12.0);
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapCancel: () => setState(() => _isPressed = false),
-      onTapUp: (_) async { 
+      onTapUp: (_) async {
         setState(() => _isPressed = false);
         await Future.delayed(const Duration(milliseconds: 150));
         if (mounted) {
@@ -105,7 +116,6 @@ class _ServiceCardState extends State<ServiceCard> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              // ignore: deprecated_member_use
               color: Colors.black.withOpacity(0.1),
               blurRadius: elevation,
               offset: const Offset(0, 4),
@@ -125,17 +135,20 @@ class _ServiceCardState extends State<ServiceCard> {
     );
   }
 
-  // ===== PERUBAHAN DI SINI =====
   Widget buildCompactCard() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Hero(
-          tag: 'service_icon_${widget.service.name}', 
-          child: Material( // <--- TAMBAHKAN INI
-            type: MaterialType.transparency, // <-- Agar transparan
-            child: Icon(widget.service.icon, size: 40, color: const Color(0xFF005f9f)),
+          tag: 'service_icon_${widget.service.name}',
+          child: Material(
+            type: MaterialType.transparency,
+            child: Icon(
+              widget.service.icon,
+              size: 40,
+              color: const Color(0xFF005f9f),
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -154,18 +167,20 @@ class _ServiceCardState extends State<ServiceCard> {
       ],
     );
   }
-  // =============================
 
-  // ===== DAN PERUBAHAN DI SINI =====
   Widget buildWideCard() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Hero(
           tag: 'service_icon_${widget.service.name}',
-          child: Material( // <--- TAMBAHKAN INI
-            type: MaterialType.transparency, // <-- Agar transparan
-            child: Icon(widget.service.icon, size: 48, color: const Color(0xFF005f9f)),
+          child: Material(
+            type: MaterialType.transparency,
+            child: Icon(
+              widget.service.icon,
+              size: 48,
+              color: const Color(0xFF005f9f),
+            ),
           ),
         ),
         const SizedBox(width: 16),
@@ -176,7 +191,10 @@ class _ServiceCardState extends State<ServiceCard> {
             children: [
               Text(
                 widget.service.name,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -189,5 +207,4 @@ class _ServiceCardState extends State<ServiceCard> {
       ],
     );
   }
-  // ===============================
 }

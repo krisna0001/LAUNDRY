@@ -7,73 +7,51 @@ class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-// ===== 1. TAMBAHKAN 'with SingleTickerProviderStateMixin' =====
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  // ==========================================================
-
-  // ===== 2. DEKLARASIKAN ANIMATION CONTROLLER & ANIMATION =====
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
-  // ==========================================================
 
   @override
   void initState() {
     super.initState();
 
-    // ===== 3. INISIALISASI CONTROLLER & ANIMATION =====
     _controller = AnimationController(
-      duration: const Duration(seconds: 2), // Durasi animasi fade-in
-      vsync: this, // Gunakan 'this' karena sudah ada mixin
+      duration: const Duration(seconds: 2),
+      vsync: this,
     );
-    // Buat animasi curve (dari 0.0 ke 1.0)
-    _fadeAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeIn, // Efek muncul perlahan
-    );
-    // ==================================================
+    _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        // Pastikan widget masih ada
         _controller.forward();
       }
     });
 
-    // Timer untuk pindah halaman (tetap sama)
     Timer(const Duration(seconds: 3), () {
       Get.off(() => const MainPage());
     });
   }
 
-  // ===== 4. JANGAN LUPA DISPOSE CONTROLLER =====
   @override
   void dispose() {
-    _controller.dispose(); // Hentikan controller saat widget dihapus
+    _controller.dispose();
     super.dispose();
   }
-  // =============================================
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(
-        255,
-        255,
-        255,
-        255,
-      ), // Warna primer kita
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // ===== 5. BUNGKUS DENGAN FadeTransition =====
             FadeTransition(
-              opacity: _fadeAnimation, // Gunakan animasi fade
+              opacity: _fadeAnimation,
               child: Image.asset(
                 'assets/images/logo_3b.png',
                 height: 400,
@@ -83,8 +61,7 @@ class _SplashScreenState extends State<SplashScreen>
             ),
             const SizedBox(height: 20),
             FadeTransition(
-              // Bungkus Teks juga
-              opacity: _fadeAnimation, // Gunakan animasi yang sama
+              opacity: _fadeAnimation,
               child: const Text(
                 'Laundry 3B',
                 style: TextStyle(
@@ -94,9 +71,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
             ),
-            // =============================================
             const SizedBox(height: 40),
-            // Loading indicator biarkan saja muncul langsung
             const SizedBox(
               height: 15.0,
               width: 15.0,
