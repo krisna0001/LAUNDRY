@@ -18,32 +18,32 @@ class CatalogScreen extends StatelessWidget {
     final List<LaundryService> services = [
       LaundryService(
         name: 'Cuci Kering Lipat',
-        price: 'Rp 7.000/kg',
+        price: 'HPP: Rp 4.500/kg',
         icon: Icons.local_laundry_service,
       ),
       LaundryService(
         name: 'Setrika Kiloan',
-        price: 'Rp 5.000/kg',
+        price: 'HPP: Rp 3.000/kg',
         icon: Icons.iron,
       ),
       LaundryService(
         name: 'Cuci Satuan Kemeja',
-        price: 'Rp 15.000/pcs',
+        price: 'HPP: Rp 8.000/pcs',
         icon: Icons.checkroom,
       ),
       LaundryService(
         name: 'Cuci Bed Cover',
-        price: 'Rp 25.000/pcs',
+        price: 'HPP: Rp 15.000/pcs',
         icon: Icons.king_bed,
       ),
       LaundryService(
         name: 'Cuci Sepatu',
-        price: 'Rp 30.000/psg',
+        price: 'HPP: Rp 18.000/psg',
         icon: Icons.ice_skating,
       ),
       LaundryService(
         name: 'Dry Cleaning Jas',
-        price: 'Rp 50.000/pcs',
+        price: 'HPP: Rp 27.000/pcs',
         icon: Icons.dry_cleaning,
       ),
     ];
@@ -54,7 +54,7 @@ class CatalogScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Katalog Layanan'),
+        title: const Text('Manajemen Layanan'),
         backgroundColor: const Color(0xFF005f9f),
         elevation: 1,
       ),
@@ -162,7 +162,7 @@ class _ServiceCardState extends State<ServiceCard> {
         const SizedBox(height: 4),
         Text(
           widget.service.price,
-          style: TextStyle(color: Colors.grey[700], fontSize: 12),
+          style: TextStyle(color: Colors.red[700], fontSize: 12),
         ),
       ],
     );
@@ -199,7 +199,7 @@ class _ServiceCardState extends State<ServiceCard> {
               const SizedBox(height: 4),
               Text(
                 widget.service.price,
-                style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                style: TextStyle(color: Colors.red[700], fontSize: 14),
               ),
             ],
           ),

@@ -11,7 +11,7 @@ class DetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(service.name),
+        title: Text('Data Layanan: ${service.name}'),
         backgroundColor: const Color(0xFF005f9f),
       ),
       body: Padding(
@@ -42,17 +42,48 @@ class DetailScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               service.price,
-              style: TextStyle(color: Colors.grey[700], fontSize: 20),
+              style: TextStyle(
+                color: Colors.red[700],
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 32),
+
+            const Text(
+              'Ringkasan SOP (Standard Operating Procedure):',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 12),
             Text(
-              'Ini adalah deskripsi layanan ${service.name}. Kami memastikan pakaian Anda bersih, wangi, dan rapi dengan penanganan profesional. Proses pengerjaan cepat dan terjamin kualitasnya.',
+              _getSop(service.name),
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, height: 1.5),
+              style: const TextStyle(
+                fontSize: 15,
+                height: 1.5,
+                color: Colors.black54,
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _getSop(String serviceName) {
+    if (serviceName.contains('Sepatu')) {
+      return '1. Cek bahan sepatu (Canvas/Kulit). \n2. Gunakan sikat & sabun khusus. \n3. Keringkan di ruang angin, JANGAN dijemur matahari langsung.';
+    }
+    if (serviceName.contains('Dry Cleaning')) {
+      return '1. Cek label garmen. \n2. Gunakan solvent (Perchloroethylene) di mesin Dry Clean. \n3. Proses finishing menggunakan setrika uap khusus.';
+    }
+    if (serviceName.contains('Bed Cover')) {
+      return '1. Gunakan mesin kapasitas besar (min. 15kg). \n2. Pastikan bed cover terendam sempurna. \n3. Proses pengeringan 100% di mesin pengering agar tidak apek.';
+    }
+    return '1. Pisahkan pakaian putih & berwarna. \n2. Timbang berat kering. \n3. Masukkan ke mesin cuci, set deterjen & pelembut. \n4. Keringkan 100% di mesin pengering.';
   }
 }

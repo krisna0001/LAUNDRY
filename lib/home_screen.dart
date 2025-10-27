@@ -25,7 +25,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             const Text(
-              'Laundry 3B',
+              'Laundry 3B - Admin',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -75,7 +75,7 @@ class HomeScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Selamat Datang, Pelanggan!',
+            'Dashboard Operasional',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -84,7 +84,7 @@ class HomeScreen extends StatelessWidget {
           ),
           SizedBox(height: 8),
           Text(
-            'Ada yang bisa kami bantu hari ini?',
+            'Ringkasan status laundry hari ini.',
             style: TextStyle(fontSize: 16, color: Colors.white70),
           ),
         ],
@@ -114,12 +114,12 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Status Pesanan Terkini',
+              'Order Perlu Perhatian',
               style: TextStyle(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 8),
             const Text(
-              'Pakaian - Sedang Dicuci',
+              '7 Order Antri Pickup',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 22,
@@ -136,7 +136,7 @@ class HomeScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
-              child: const Text('Lacak Detail'),
+              child: const Text('Lihat Antrian Pickup'),
             ),
           ],
         ),
@@ -160,7 +160,7 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Layanan Kami',
+              'Panel Kontrol',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -178,25 +178,29 @@ class HomeScreen extends StatelessWidget {
   Widget buildMenuGrid(BuildContext context) {
     final List<Map<String, dynamic>> menuItems = [
       {
-        'icon': Icons.local_laundry_service,
-        'label': 'Katalog',
+        'icon': Icons.inventory_2,
+        'label': 'Manajemen Layanan',
         'page': const CatalogScreen(),
       },
       {
         'icon': Icons.delivery_dining,
-        'label': 'Antar-Jemput',
+        'label': 'Manajemen Kurir',
         'page': const DeliveryScreen(),
       },
-      {'icon': Icons.store, 'label': 'Outlet', 'page': null},
+      {'icon': Icons.store, 'label': 'Data Outlet', 'page': null},
       {
         'icon': Icons.account_balance_wallet,
-        'label': 'Isi Saldo',
+        'label': 'Laporan Keuangan',
         'page': null,
       },
-      {'icon': Icons.card_giftcard, 'label': 'Poin', 'page': null},
-      {'icon': Icons.confirmation_number, 'label': 'Voucher', 'page': null},
-      {'icon': Icons.price_check, 'label': 'Cek Harga', 'page': null},
-      {'icon': Icons.help_outline, 'label': 'Bantuan', 'page': null},
+      {'icon': Icons.people, 'label': 'Data Pelanggan', 'page': null},
+      {
+        'icon': Icons.confirmation_number,
+        'label': 'Manajemen Promo',
+        'page': null,
+      },
+      {'icon': Icons.price_check, 'label': 'Atur Harga', 'page': null},
+      {'icon': Icons.menu_book, 'label': 'Panduan SOP', 'page': null},
     ];
 
     return GridView.builder(
@@ -229,7 +233,7 @@ class HomeScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Info & Promo',
+            'Pemberitahuan Sistem',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -257,21 +261,21 @@ class HomeScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Promo Spesial!',
+                  'Perlu Perhatian',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.teal,
+                    color: Colors.teal[700],
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
-                  'Diskon 20% untuk cuci Bed Cover hari ini.',
+                const SizedBox(height: 8),
+                const Text(
+                  'Mesin Pengering #2 dijadwalkan maintenance sore ini pukul 16:00.',
                   style: TextStyle(fontSize: 14, color: Colors.black54),
                 ),
               ],
@@ -322,8 +326,8 @@ class _HomeMenuButtonState extends State<HomeMenuButton> {
           Get.to(() => widget.page!);
         } else {
           Get.snackbar(
-            'Segera Hadir',
-            'Fitur "${widget.label}" sedang dalam pengembangan.',
+            'Fitur Belum Aktif',
+            'Panel "${widget.label}" sedang dalam persiapan.',
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.grey[700],
             colorText: Colors.white,

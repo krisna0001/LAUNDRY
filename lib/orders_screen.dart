@@ -7,13 +7,17 @@ class OrdersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pesanan Saya'),
+        title: const Text('Manajemen Order'),
         backgroundColor: const Color(0xFF005f9f),
       ),
       body: const Center(
-        child: Text(
-          'Halaman Daftar Pesanan (Aktif & Riwayat)',
-          style: TextStyle(fontSize: 18),
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            'Tinjau semua order masuk, pantau antrian proses cuci, dan lihat riwayat transaksi di sini.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18, color: Colors.black54),
+          ),
         ),
       ),
     );
