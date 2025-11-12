@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:laundry3b1titik0/catalog_screen.dart';
 import 'package:get/get.dart';
 import 'package:laundry3b1titik0/screens/delivery_screen.dart';
+import 'package:laundry3b1titik0/pages/data_outlet_page.dart';
+import 'package:laundry3b1titik0/pages/laporan_keuangan_page.dart';
+import 'package:laundry3b1titik0/pages/data_pelanggan_page.dart';
+import 'package:laundry3b1titik0/pages/manajemen_promo_page.dart';
+import 'package:laundry3b1titik0/pages/atur_harga_page.dart';
+import 'package:laundry3b1titik0/pages/panduan_sop_page.dart';
+import 'package:laundry3b1titik0/pages/lihat_antrian_page.dart';
+import 'package:laundry3b1titik0/pages/manajemen_order_page.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -47,7 +55,7 @@ class HomeScreen extends StatelessWidget {
 
           Transform.translate(
             offset: const Offset(0.0, -70.0),
-            child: buildInfoCard(),
+            child: _buildInfoCard(context),
           ),
 
           _buildMenuSection(context),
@@ -92,7 +100,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget buildInfoCard() {
+  Widget _buildInfoCard(BuildContext context) {
     const Color cardColor = Color.fromARGB(255, 255, 3, 3);
 
     return Padding(
@@ -128,7 +136,9 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             OutlinedButton(
-              onPressed: () {},
+              onPressed: () {
+                Get.to(() => const LihatAntrianPage());
+              },
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
                 side: const BorderSide(color: Colors.white54),
@@ -168,15 +178,20 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            buildMenuGrid(context),
+            _buildMenuGrid(context),
           ],
         ),
       ),
     );
   }
 
-  Widget buildMenuGrid(BuildContext context) {
+  Widget _buildMenuGrid(BuildContext context) {
     final List<Map<String, dynamic>> menuItems = [
+      {
+        'icon': Icons.add_shopping_cart,
+        'label': 'Manajemen Order',
+        'page': const ManajemenOrderPage(),
+      },
       {
         'icon': Icons.inventory_2,
         'label': 'Manajemen Layanan',
@@ -187,20 +202,36 @@ class HomeScreen extends StatelessWidget {
         'label': 'Manajemen Kurir',
         'page': const DeliveryScreen(),
       },
-      {'icon': Icons.store, 'label': 'Data Outlet', 'page': null},
+      {
+        'icon': Icons.store,
+        'label': 'Data Outlet',
+        'page': const DataOutletPage(),
+      },
       {
         'icon': Icons.account_balance_wallet,
         'label': 'Laporan Keuangan',
-        'page': null,
+        'page': const LaporanKeuanganPage(),
       },
-      {'icon': Icons.people, 'label': 'Data Pelanggan', 'page': null},
+      {
+        'icon': Icons.people,
+        'label': 'Data Pelanggan',
+        'page': const DataPelangganPage(),
+      },
       {
         'icon': Icons.confirmation_number,
         'label': 'Manajemen Promo',
-        'page': null,
+        'page': const ManajemenPromoPage(),
       },
-      {'icon': Icons.price_check, 'label': 'Atur Harga', 'page': null},
-      {'icon': Icons.menu_book, 'label': 'Panduan SOP', 'page': null},
+      {
+        'icon': Icons.price_check,
+        'label': 'Atur Harga',
+        'page': const AturHargaPage(),
+      },
+      {
+        'icon': Icons.menu_book,
+        'label': 'Panduan SOP',
+        'page': const PanduanSopPage(),
+      },
     ];
 
     return GridView.builder(
@@ -214,14 +245,11 @@ class HomeScreen extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final item = menuItems[index];
-
-        final menuButton = HomeMenuButton(
+        return HomeMenuButton(
           icon: item['icon'],
           label: item['label'],
           page: item['page'],
         );
-
-        return menuButton;
       },
     );
   }
@@ -241,23 +269,18 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          buildPromoBanner(),
+          _buildPromoBanner(),
         ],
       ),
     );
   }
 
-  Widget buildPromoBanner() {
+  Widget _buildPromoBanner() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.teal[50],
         borderRadius: BorderRadius.circular(16),
-        image: const DecorationImage(
-          image: AssetImage('assets/images/promo_bg.png'),
-          fit: BoxFit.cover,
-          opacity: 0.2,
-        ),
       ),
       child: Row(
         children: [
@@ -317,27 +340,16 @@ class _HomeMenuButtonState extends State<HomeMenuButton> {
         ? _primaryColor.withOpacity(0.2)
         : _primaryColor.withOpacity(0.1);
 
-    return InkWell(
+    return GestureDetector(
       onTapDown: (_) => setState(() => _isInteracting = true),
       onTapUp: (_) {
         setState(() => _isInteracting = false);
 
         if (widget.page != null) {
           Get.to(() => widget.page!);
-        } else {
-          Get.snackbar(
-            'Fitur Belum Aktif',
-            'Panel "${widget.label}" sedang dalam persiapan.',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.grey[700],
-            colorText: Colors.white,
-          );
         }
       },
       onTapCancel: () => setState(() => _isInteracting = false),
-      onHover: (isHovering) => setState(() => _isInteracting = isHovering),
-
-      borderRadius: BorderRadius.circular(12),
       child: AnimatedScale(
         scale: scale,
         duration: _animDuration,

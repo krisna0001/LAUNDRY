@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:laundry3b1titik0/detail_screen.dart';
+import 'package:laundry3b1titik0/controllers/catalog_controller.dart';
 
 class LaundryService {
   final String name;
@@ -8,48 +9,40 @@ class LaundryService {
   final IconData icon;
 
   LaundryService({required this.name, required this.price, required this.icon});
+
+  factory LaundryService.fromJson(Map<String, dynamic> json) {
+    // Map icon strings to IconData (assuming 'icon' field contains icon name as string)
+    final iconName = json['icon'] ?? 'local_laundry_service';
+    final iconData = _getIconFromString(iconName);
+
+    return LaundryService(
+      name: json['name'] ?? 'Unknown Service',
+      price: json['price'] ?? 'Price not available',
+      icon: iconData,
+    );
+  }
+
+  static IconData _getIconFromString(String iconName) {
+    const iconMap = {
+      'local_laundry_service': Icons.local_laundry_service,
+      'iron': Icons.iron,
+      'checkroom': Icons.checkroom,
+      'king_bed': Icons.king_bed,
+      'ice_skating': Icons.ice_skating,
+      'dry_cleaning': Icons.dry_cleaning,
+    };
+    return iconMap[iconName] ?? Icons.local_laundry_service;
+  }
 }
 
-class CatalogScreen extends StatelessWidget {
+class CatalogScreen extends GetView<CatalogController> {
   const CatalogScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final List<LaundryService> services = [
-      LaundryService(
-        name: 'Cuci Kering Lipat',
-        price: 'HPP: Rp 4.500/kg',
-        icon: Icons.local_laundry_service,
-      ),
-      LaundryService(
-        name: 'Setrika Kiloan',
-        price: 'HPP: Rp 3.000/kg',
-        icon: Icons.iron,
-      ),
-      LaundryService(
-        name: 'Cuci Satuan Kemeja',
-        price: 'HPP: Rp 8.000/pcs',
-        icon: Icons.checkroom,
-      ),
-      LaundryService(
-        name: 'Cuci Bed Cover',
-        price: 'HPP: Rp 15.000/pcs',
-        icon: Icons.king_bed,
-      ),
-      LaundryService(
-        name: 'Cuci Sepatu',
-        price: 'HPP: Rp 18.000/psg',
-        icon: Icons.ice_skating,
-      ),
-      LaundryService(
-        name: 'Dry Cleaning Jas',
-        price: 'HPP: Rp 27.000/pcs',
-        icon: Icons.dry_cleaning,
-      ),
-    ];
+    final CatalogController catalogController = Get.put(CatalogController());
 
     final Size screenSize = MediaQuery.of(context).size;
-
     final int crossAxisCount = screenSize.width > 600 ? 3 : 2;
 
     return Scaffold(
@@ -58,21 +51,31 @@ class CatalogScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF005f9f),
         elevation: 1,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            childAspectRatio: 0.9,
+      body: Obx(() {
+        if (catalogController.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (catalogController.services.isEmpty) {
+          return const Center(child: Text('Tidak ada layanan tersedia'));
+        }
+
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              childAspectRatio: 0.9,
+            ),
+            itemCount: catalogController.services.length,
+            itemBuilder: (context, index) {
+              return ServiceCard(service: catalogController.services[index]);
+            },
           ),
-          itemCount: services.length,
-          itemBuilder: (context, index) {
-            return ServiceCard(service: services[index]);
-          },
-        ),
-      ),
+        );
+      }),
     );
   }
 }

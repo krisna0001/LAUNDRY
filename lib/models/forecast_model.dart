@@ -1,43 +1,38 @@
 import 'dart:convert';
+import 'package:hive/hive.dart';
 
-class ForecastModel {
+part 'forecast_model.g.dart';
+
+@HiveType(typeId: 1)
+class ForecastModel extends HiveObject {
+  @HiveField(0)
   final List<ForecastItem> list;
 
   ForecastModel({required this.list});
 
   factory ForecastModel.fromJson(Map<String, dynamic> json) {
-    var forecastList = <ForecastItem>[];
-    if (json['list'] != null) {
-      json['list'].forEach((v) {
-        forecastList.add(ForecastItem.fromJson(v));
-      });
-    }
-    return ForecastModel(list: forecastList);
+    return ForecastModel(
+      list: (json['list'] as List)
+          .map((item) => ForecastItem.fromJson(item as Map<String, dynamic>))
+          .toList(),
+    );
   }
 }
 
-class ForecastItem {
+@HiveType(typeId: 2)
+class ForecastItem extends HiveObject {
+  @HiveField(0)
   final DateTime dateTime;
-  final double temperature;
-  final String description;
-  final String iconCode;
 
-  ForecastItem({
-    required this.dateTime,
-    required this.temperature,
-    required this.description,
-    required this.iconCode,
-  });
+  @HiveField(1)
+  final String description;
+
+  ForecastItem({required this.dateTime, required this.description});
 
   factory ForecastItem.fromJson(Map<String, dynamic> json) {
-    final weather = json['weather'][0];
-    final main = json['main'];
-
     return ForecastItem(
-      dateTime: DateTime.parse(json['dt_txt']),
-      temperature: (main['temp'] as num?)?.toDouble() ?? 0.0,
-      description: weather['description'] ?? 'No description',
-      iconCode: weather['icon'] ?? '01d',
+      dateTime: DateTime.fromMillisecondsSinceEpoch(json['dt'] * 1000),
+      description: json['weather'][0]['description'] ?? '',
     );
   }
 }

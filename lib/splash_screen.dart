@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'dart:async';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:laundry3b1titik0/main_page.dart';
+import 'package:laundry3b1titik0/screens/login_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -31,9 +32,23 @@ class _SplashScreenState extends State<SplashScreen>
       }
     });
 
-    Timer(const Duration(seconds: 3), () {
-      Get.off(() => const MainPage());
-    });
+    _checkAuthState();
+  }
+
+  Future<void> _checkAuthState() async {
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (mounted) {
+      final session = Supabase.instance.client.auth.currentSession;
+
+      if (session != null) {
+        print('User logged in: ${session.user.email}');
+        Get.offAll(() => const MainPage());
+      } else {
+        print('No session found, redirecting to login');
+        Get.offAll(() => const LoginPage());
+      }
+    }
   }
 
   @override

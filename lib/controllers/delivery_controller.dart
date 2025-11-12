@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:laundry3b1titik0/models/weather_model.dart';
 import 'package:laundry3b1titik0/models/forecast_model.dart';
-import 'package:collection/collection.dart';
 
 class DeliveryController extends GetxController {
   var isLoading = false.obs;
@@ -26,6 +26,8 @@ class DeliveryController extends GetxController {
   final String _gnewsApiKey = 'GANTI_DENGAN_API_KEY_GNEWS_ANDA';
 
   final Dio _dio = Dio();
+  late Box<WeatherModel> _weatherBox;
+  late Box<ForecastItem> _forecastBox;
 
   @override
   void onInit() {
@@ -34,6 +36,45 @@ class DeliveryController extends GetxController {
         'https://api.openweathermap.org/data/2.5/weather?q=$_cityName&appid=$_apiKey&units=metric&lang=id';
     _forecastApiUrl =
         'https://api.openweathermap.org/data/2.5/forecast?q=$_cityName&appid=$_apiKey&units=metric&lang=id';
+    _initializeHiveBoxes();
+  }
+
+  Future<void> _initializeHiveBoxes() async {
+    _weatherBox = await Hive.openBox<WeatherModel>('weather');
+    _forecastBox = await Hive.openBox<ForecastItem>('forecast');
+    print('Hive boxes initialized');
+  }
+
+  void _loadCachedData() {
+    // Load cached weather data
+    if (_weatherBox.isNotEmpty) {
+      weatherData.value = _weatherBox.getAt(0);
+      print('Loaded cached weather data: ${weatherData.value?.cityName}');
+    }
+
+    // Load cached forecast data
+    forecastList.clear();
+    if (_forecastBox.isNotEmpty) {
+      forecastList.addAll(_forecastBox.values);
+      print('Loaded ${forecastList.length} cached forecast items');
+    }
+  }
+
+  Future<void> _saveCachedData(
+    WeatherModel weather,
+    List<ForecastItem> forecasts,
+  ) async {
+    // Save weather data (keep only 1 latest record)
+    await _weatherBox.clear();
+    await _weatherBox.add(weather);
+    print('Saved weather data to cache');
+
+    // Save forecast data
+    await _forecastBox.clear();
+    for (var forecast in forecasts) {
+      await _forecastBox.add(forecast);
+    }
+    print('Saved ${forecasts.length} forecast items to cache');
   }
 
   Future<void> _fetchForecast() async {
@@ -56,9 +97,11 @@ class DeliveryController extends GetxController {
     fetchTimeHttp.value = '';
     fetchTimeDio.value = '';
     fetchTimeChain.value = '';
-    weatherData.value = null;
     operationalWarning.value = '';
-    forecastList.clear();
+
+    // Load cached data first
+    _loadCachedData();
+
     final stopwatch = Stopwatch()..start();
 
     try {
@@ -69,16 +112,30 @@ class DeliveryController extends GetxController {
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
-        weatherData.value = WeatherModel.fromJson(jsonData);
+        final newWeather = WeatherModel.fromJson(jsonData);
+        weatherData.value = newWeather;
         await _fetchForecast();
+
+        // Save to cache
+        await _saveCachedData(newWeather, forecastList);
       } else {
-        errorMessage.value =
-            'Gagal memuat data (HTTP): Status ${response.statusCode}';
+        if (weatherData.value != null) {
+          errorMessage.value =
+              'Gagal update data (HTTP): Status ${response.statusCode}. Menampilkan data cache terakhir.';
+        } else {
+          errorMessage.value =
+              'Gagal memuat data (HTTP): Status ${response.statusCode}';
+        }
         print('Error HTTP: ${response.body}');
       }
     } catch (e) {
       stopwatch.stop();
-      errorMessage.value = 'Terjadi kesalahan (HTTP): ${e.toString()}';
+      if (weatherData.value != null) {
+        errorMessage.value =
+            'Terjadi kesalahan (HTTP): ${e.toString()}. Menampilkan data cache terakhir.';
+      } else {
+        errorMessage.value = 'Terjadi kesalahan (HTTP): ${e.toString()}';
+      }
       print('Exception HTTP: ${e.toString()}');
     } finally {
       isLoading.value = false;
@@ -91,9 +148,11 @@ class DeliveryController extends GetxController {
     fetchTimeHttp.value = '';
     fetchTimeDio.value = '';
     fetchTimeChain.value = '';
-    weatherData.value = null;
     operationalWarning.value = '';
-    forecastList.clear();
+
+    // Load cached data first
+    _loadCachedData();
+
     final stopwatch = Stopwatch()..start();
 
     _dio
@@ -104,11 +163,20 @@ class DeliveryController extends GetxController {
           print('Eksperimen DIO selesai dalam: ${fetchTimeDio.value}');
 
           if (response.statusCode == 200) {
-            weatherData.value = WeatherModel.fromJson(response.data);
+            final newWeather = WeatherModel.fromJson(response.data);
+            weatherData.value = newWeather;
             await _fetchForecast();
+
+            // Save to cache
+            await _saveCachedData(newWeather, forecastList);
           } else {
-            errorMessage.value =
-                'Gagal memuat data (Dio): Status ${response.statusCode}';
+            if (weatherData.value != null) {
+              errorMessage.value =
+                  'Gagal update data (Dio): Status ${response.statusCode}. Menampilkan data cache terakhir.';
+            } else {
+              errorMessage.value =
+                  'Gagal memuat data (Dio): Status ${response.statusCode}';
+            }
             print('Error Dio: ${response.statusMessage}');
           }
           isLoading.value = false;
@@ -116,26 +184,38 @@ class DeliveryController extends GetxController {
         .catchError((error) {
           stopwatch.stop();
           if (error is DioException) {
-            errorMessage.value = 'Terjadi kesalahan (Dio): ${error.message}';
+            if (weatherData.value != null) {
+              errorMessage.value =
+                  'Terjadi kesalahan (Dio): ${error.message}. Menampilkan data cache terakhir.';
+            } else {
+              errorMessage.value = 'Terjadi kesalahan (Dio): ${error.message}';
+            }
             print('DioException: ${error.response?.data ?? error.message}');
           } else {
-            errorMessage.value =
-                'Terjadi kesalahan tidak dikenal (Dio): ${error.toString()}';
+            if (weatherData.value != null) {
+              errorMessage.value =
+                  'Terjadi kesalahan tidak dikenal (Dio): ${error.toString()}. Menampilkan data cache terakhir.';
+            } else {
+              errorMessage.value =
+                  'Terjadi kesalahan tidak dikenal (Dio): ${error.toString()}';
+            }
             print('Exception Dio: ${error.toString()}');
           }
           isLoading.value = false;
-          weatherData.value = null;
         });
   }
 
   Future<void> checkOperationalImpact() async {
     isLoading.value = true;
     errorMessage.value = '';
-    weatherData.value = null;
     operationalWarning.value = '';
     fetchTimeHttp.value = '';
     fetchTimeDio.value = '';
     fetchTimeChain.value = '';
+
+    // Load cached data first
+    _loadCachedData();
+
     final stopwatch = Stopwatch()..start();
 
     try {
@@ -176,6 +256,10 @@ class DeliveryController extends GetxController {
           operationalWarning.value =
               'INFO (Hujan): Cuaca buruk terdeteksi, namun tidak ada laporan berita darurat (banjir/longsor) dalam 12 jam terakhir. Operasional tetap waspada.';
         }
+
+        weatherData.value = weather;
+        await _fetchForecast();
+        await _saveCachedData(weather, forecastList);
       } else {
         print(
           'Rantai #1: Cuaca Aman (${weather.description}). Rantai Berhenti.',
@@ -185,19 +269,38 @@ class DeliveryController extends GetxController {
 
         operationalWarning.value =
             'INFO CUACA SEDANG (${weather.description}). Operasional normal.';
+
+        weatherData.value = weather;
+        await _fetchForecast();
+        await _saveCachedData(weather, forecastList);
       }
     } catch (e) {
       stopwatch.stop();
       if (e is DioException) {
         if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
-          errorMessage.value =
-              'Gagal Cek Berita: API Key GNews salah atau kuota habis.';
+          if (weatherData.value != null) {
+            errorMessage.value =
+                'Gagal Cek Berita: API Key GNews salah atau kuota habis. Menampilkan data cache terakhir.';
+          } else {
+            errorMessage.value =
+                'Gagal Cek Berita: API Key GNews salah atau kuota habis.';
+          }
         } else {
-          errorMessage.value = 'Terjadi kesalahan Rantai (Dio): ${e.message}';
+          if (weatherData.value != null) {
+            errorMessage.value =
+                'Terjadi kesalahan Rantai (Dio): ${e.message}. Menampilkan data cache terakhir.';
+          } else {
+            errorMessage.value = 'Terjadi kesalahan Rantai (Dio): ${e.message}';
+          }
         }
         print('DioException Rantai: ${e.response?.data ?? e.message}');
       } else {
-        errorMessage.value = 'Terjadi kesalahan Rantai: ${e.toString()}';
+        if (weatherData.value != null) {
+          errorMessage.value =
+              'Terjadi kesalahan Rantai: ${e.toString()}. Menampilkan data cache terakhir.';
+        } else {
+          errorMessage.value = 'Terjadi kesalahan Rantai: ${e.toString()}';
+        }
         print('Exception Rantai: ${e.toString()}');
       }
     } finally {
@@ -232,11 +335,16 @@ class DeliveryController extends GetxController {
         return 'INFO (Mendung): Cuaca mendung. Sisa hari ini aman (tidak ada perkiraan hujan).';
       }
 
-      final firstRainEvent = upcomingForecastsToday.firstWhereOrNull(
-        (item) =>
-            item.description.contains('hujan') ||
-            item.description.contains('gerimis'),
-      );
+      // Ganti firstWhereOrNull dengan firstWhere + orElse
+      final firstRainEvent =
+          upcomingForecastsToday.cast<ForecastItem?>().firstWhere(
+                (item) =>
+                    item != null &&
+                    (item.description.contains('hujan') ||
+                        item.description.contains('gerimis')),
+                orElse: () => null,
+              )
+              as ForecastItem?;
 
       if (firstRainEvent == null) {
         return 'INFO (Mendung): Cuaca mendung, namun perkiraan cuaca sisa hari ini **AMAN** (tidak ada tanda hujan). Operasional normal.';
@@ -244,12 +352,16 @@ class DeliveryController extends GetxController {
         final rainStartTime = firstRainEvent.dateTime;
         final rainTimeStr = '${rainStartTime.hour}:00';
 
-        final clearWeatherAfterRain = forecastList.firstWhereOrNull(
-          (item) =>
-              item.dateTime.isAfter(rainStartTime) &&
-              !(item.description.contains('hujan') ||
-                  item.description.contains('gerimis')),
-        );
+        final clearWeatherAfterRain =
+            forecastList.cast<ForecastItem?>().firstWhere(
+                  (item) =>
+                      item != null &&
+                      item.dateTime.isAfter(rainStartTime) &&
+                      !(item.description.contains('hujan') ||
+                          item.description.contains('gerimis')),
+                  orElse: () => null,
+                )
+                as ForecastItem?;
 
         if (clearWeatherAfterRain != null) {
           final clearTimeStr = '${clearWeatherAfterRain.dateTime.hour}:00';

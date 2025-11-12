@@ -5,6 +5,14 @@ import 'package:laundry3b1titik0/home_screen.dart';
 import 'package:laundry3b1titik0/orders_screen.dart';
 import 'package:laundry3b1titik0/chat_screen.dart';
 import 'package:laundry3b1titik0/profile_screen.dart';
+import 'package:laundry3b1titik0/pages/add_order_page.dart';
+import 'package:laundry3b1titik0/pages/data_outlet_page.dart';
+import 'package:laundry3b1titik0/pages/laporan_keuangan_page.dart';
+import 'package:laundry3b1titik0/pages/data_pelanggan_page.dart';
+import 'package:laundry3b1titik0/pages/manajemen_promo_page.dart';
+import 'package:laundry3b1titik0/pages/atur_harga_page.dart';
+import 'package:laundry3b1titik0/pages/panduan_sop_page.dart';
+import 'package:laundry3b1titik0/pages/lihat_antrian_page.dart';
 
 class MainPage extends GetView<MainPageController> {
   const MainPage({super.key});
