@@ -10,8 +10,8 @@ import 'package:laundry3b1titik0/pages/atur_harga_page.dart';
 import 'package:laundry3b1titik0/pages/panduan_sop_page.dart';
 import 'package:laundry3b1titik0/pages/lihat_antrian_page.dart';
 import 'package:laundry3b1titik0/pages/manajemen_order_page.dart';
+import 'package:laundry3b1titik0/pages/location_experiment_page.dart';
 import 'controllers/location_controller.dart';
-import 'pages/location_experiment_page.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -54,18 +54,13 @@ class HomeScreen extends StatelessWidget {
       body: ListView(
         children: [
           _buildWelcomeHeader(context),
-
           Transform.translate(
             offset: const Offset(0.0, -70.0),
             child: _buildInfoCard(context),
           ),
-
           _buildMenuSection(context),
-
           const SizedBox(height: 24),
-
           _buildPromoSection(),
-
           const SizedBox(height: 24),
         ],
       ),
@@ -235,14 +230,9 @@ class HomeScreen extends StatelessWidget {
         'page': const PanduanSopPage(),
       },
       {
-        'label': 'Lokasi & Peta',
         'icon': Icons.map,
-        'color': Colors.orange,
-        'onTap': () {
-          // Inject controller saat navigasi
-          Get.lazyPut<LocationController>(() => LocationController());
-          Get.to(() => const LocationExperimentPage());
-        },
+        'label': 'Lokasi & Peta',
+        'page': const LocationExperimentPage(),
       },
     ];
 
@@ -358,6 +348,10 @@ class _HomeMenuButtonState extends State<HomeMenuButton> {
         setState(() => _isInteracting = false);
 
         if (widget.page != null) {
+          // Inject LocationController hanya untuk LocationExperimentPage
+          if (widget.label == 'Lokasi & Peta') {
+            Get.lazyPut<LocationController>(() => LocationController());
+          }
           Get.to(() => widget.page!);
         }
       },
