@@ -10,6 +10,8 @@ import 'package:laundry3b1titik0/pages/atur_harga_page.dart';
 import 'package:laundry3b1titik0/pages/panduan_sop_page.dart';
 import 'package:laundry3b1titik0/pages/lihat_antrian_page.dart';
 import 'package:laundry3b1titik0/pages/manajemen_order_page.dart';
+import 'controllers/location_controller.dart';
+import 'pages/location_experiment_page.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -231,6 +233,16 @@ class HomeScreen extends StatelessWidget {
         'icon': Icons.menu_book,
         'label': 'Panduan SOP',
         'page': const PanduanSopPage(),
+      },
+      {
+        'label': 'Lokasi & Peta',
+        'icon': Icons.map,
+        'color': Colors.orange,
+        'onTap': () {
+          // Inject controller saat navigasi
+          Get.lazyPut<LocationController>(() => LocationController());
+          Get.to(() => const LocationExperimentPage());
+        },
       },
     ];
 
