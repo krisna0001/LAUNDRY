@@ -19,7 +19,8 @@ class _AturHargaPageState extends State<AturHargaPage> {
   final TextEditingController _hargaController = TextEditingController();
 
   File? _imageFile;
-  bool _isUploading = false;
+  bool _isLoadingServices = true;
+  bool _isSubmitting = false;
   List<Map<String, dynamic>> _pricingList = [];
 
   @override
@@ -29,13 +30,31 @@ class _AturHargaPageState extends State<AturHargaPage> {
   }
 
   Future<void> _loadPricingData() async {
-    final data = await _supabaseService.getPricing();
-    setState(() {
-      _pricingList = data;
-    });
+    try {
+      setState(() {
+        _isLoadingServices = true;
+      });
+
+      print('📥 Loading pricing data...');
+      final data = await _supabaseService.getPricing();
+
+      setState(() {
+        _pricingList = data;
+      });
+
+      print('✓ Loaded ${data.length} pricing items');
+    } catch (e) {
+      print('❌ Error loading pricing: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoadingServices = false;
+      });
+    }
   }
 
-  // Fungsi pilih gambar dari gallery
   Future<void> _pickImage() async {
     try {
       final pickedFile = await _imagePicker.pickImage(
@@ -47,15 +66,17 @@ class _AturHargaPageState extends State<AturHargaPage> {
         setState(() {
           _imageFile = File(pickedFile.path);
         });
+
+        print('✓ Image selected: ${pickedFile.path}');
       }
     } catch (e) {
+      print('❌ Error picking image: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error picking image: $e')),
       );
     }
   }
 
-  // Fungsi tambah harga
   Future<void> _addPricing() async {
     if (_namaLayananController.text.isEmpty || _hargaController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -65,7 +86,7 @@ class _AturHargaPageState extends State<AturHargaPage> {
     }
 
     setState(() {
-      _isUploading = true;
+      _isSubmitting = true;
     });
 
     try {
@@ -73,13 +94,18 @@ class _AturHargaPageState extends State<AturHargaPage> {
 
       // Jika ada gambar, upload dulu
       if (_imageFile != null) {
+        print('📤 Uploading image...');
         imageUrl = await _supabaseService.uploadServiceImage(_imageFile!);
+
         if (imageUrl == null) {
           throw Exception('Gagal upload gambar');
         }
+
+        print('✓ Image uploaded: $imageUrl');
       }
 
       // Simpan ke database
+      print('💾 Saving pricing to database...');
       final success = await _supabaseService.setPricing(
         _namaLayananController.text,
         double.parse(_hargaController.text),
@@ -88,7 +114,7 @@ class _AturHargaPageState extends State<AturHargaPage> {
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Harga berhasil ditambahkan')),
+          const SnackBar(content: Text('✓ Harga berhasil ditambahkan')),
         );
 
         // Reset form
@@ -99,15 +125,18 @@ class _AturHargaPageState extends State<AturHargaPage> {
         });
 
         // Reload data
-        _loadPricingData();
+        await _loadPricingData();
+      } else {
+        throw Exception('Gagal simpan data ke database');
       }
     } catch (e) {
+      print('❌ Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
     } finally {
       setState(() {
-        _isUploading = false;
+        _isSubmitting = false;
       });
     }
   }
@@ -129,7 +158,7 @@ class _AturHargaPageState extends State<AturHargaPage> {
           ),
           const SizedBox(height: 12),
           GestureDetector(
-            onTap: _pickImage,
+            onTap: _imageFile == null ? _pickImage : null,
             child: Container(
               height: 200,
               decoration: BoxDecoration(
@@ -191,6 +220,7 @@ class _AturHargaPageState extends State<AturHargaPage> {
             ),
           ),
           const SizedBox(height: 24),
+
           // ========== INPUT NAMA LAYANAN ==========
           TextField(
             controller: _namaLayananController,
@@ -203,6 +233,7 @@ class _AturHargaPageState extends State<AturHargaPage> {
             ),
           ),
           const SizedBox(height: 16),
+
           // ========== INPUT HARGA ==========
           TextField(
             controller: _hargaController,
@@ -216,88 +247,97 @@ class _AturHargaPageState extends State<AturHargaPage> {
             ),
           ),
           const SizedBox(height: 24),
+
           // ========== TOMBOL TAMBAH ==========
-          ElevatedButton.icon(
-            icon: _isUploading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : const Icon(Icons.add),
-            label: Text(
-              _isUploading ? 'Mengunggah...' : 'Tambah Harga',
-            ),
-            onPressed: _isUploading ? null : _addPricing,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.teal,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              disabledBackgroundColor: Colors.grey,
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              icon: _isSubmitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Icon(Icons.add),
+              label: Text(
+                _isSubmitting ? 'Mengunggah & Menyimpan...' : 'Tambah Harga',
+              ),
+              onPressed: _isSubmitting ? null : _addPricing,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                disabledBackgroundColor: Colors.grey,
+              ),
             ),
           ),
           const SizedBox(height: 32),
+
           // ========== DAFTAR HARGA ==========
           Text(
             'Daftar Harga Layanan',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),
-          _pricingList.isEmpty
-              ? Center(
-                  child: Text(
-                    'Belum ada data harga',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                )
-              : ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _pricingList.length,
-                  itemBuilder: (context, index) {
-                    final item = _pricingList[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: ListTile(
-                        leading: item['image_url'] != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                  item['image_url'],
+          if (_isLoadingServices)
+            const Center(
+              child: CircularProgressIndicator(),
+            )
+          else if (_pricingList.isEmpty)
+            Center(
+              child: Text(
+                'Belum ada data harga',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _pricingList.length,
+              itemBuilder: (context, index) {
+                final item = _pricingList[index];
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: ListTile(
+                    leading: item['image_url'] != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              item['image_url'],
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
                                   width: 60,
                                   height: 60,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: 60,
-                                      height: 60,
-                                      color: Colors.grey[300],
-                                      child:
-                                          const Icon(Icons.image_not_supported),
-                                    );
-                                  },
-                                ),
-                              )
-                            : Container(
-                                width: 60,
-                                height: 60,
-                                color: Colors.grey[300],
-                                child: const Icon(Icons.image),
-                              ),
-                        title: Text(item['service_name'] ?? 'N/A'),
-                        subtitle: Text(
-                          'Rp ${item['price']?.toStringAsFixed(0) ?? '0'}',
-                          style: const TextStyle(
-                            color: Colors.teal,
-                            fontWeight: FontWeight.bold,
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.image_not_supported),
+                                );
+                              },
+                            ),
+                          )
+                        : Container(
+                            width: 60,
+                            height: 60,
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.image),
                           ),
-                        ),
+                    title: Text(item['service_name'] ?? 'N/A'),
+                    subtitle: Text(
+                      'Rp ${item['price']?.toStringAsFixed(0) ?? '0'}',
+                      style: const TextStyle(
+                        color: Colors.teal,
+                        fontWeight: FontWeight.bold,
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );

@@ -62,127 +62,96 @@ class _AddOrderPageState extends State<AddOrderPage> {
     }
   }
 
-  void _showLayananBottomSheet() {
-    showModalBottomSheet(
+  void _showLayananDialog() {
+    showDialog(
       context: context,
-      isScrollControlled: true,
       builder: (context) {
         return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Container(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.75,
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Pilih Layanan'),
+              titleTextStyle: TextStyle(
+                color: Theme.of(context).textTheme.titleLarge?.color,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.teal,
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Pilih Layanan',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.white),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // List Layanan
-                  Expanded(
-                    child: _services.isEmpty
-                        ? const Center(
-                            child: Text('Tidak ada layanan tersedia'),
-                          )
-                        : ListView.builder(
-                            itemCount: _services.length,
-                            itemBuilder: (context, index) {
-                              final service = _services[index];
-                              final isSelected = _selectedServices.any(
-                                (s) =>
-                                    s['service_name'] ==
-                                    service['service_name'],
-                              );
+              backgroundColor: Theme.of(context).cardColor,
+              contentPadding: const EdgeInsets.all(16),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: _services.isEmpty
+                    ? const Center(
+                        child: Text('Tidak ada layanan tersedia'),
+                      )
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _services.length,
+                        itemBuilder: (context, index) {
+                          final service = _services[index];
+                          final isSelected = _selectedServices.any(
+                            (s) => s['service_name'] == service['service_name'],
+                          );
 
-                              return CheckboxListTile(
-                                title:
-                                    Text(service['service_name'] ?? 'Unknown'),
-                                subtitle: Text(
-                                  'Rp ${(service['price'] as num).toStringAsFixed(0)}',
-                                  style: const TextStyle(
-                                    color: Colors.teal,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                value: isSelected,
-                                onChanged: (value) {
-                                  setModalState(() {
-                                    if (value == true) {
-                                      // Tambah ke selected
-                                      _selectedServices.add(service);
-                                    } else {
-                                      // Hapus dari selected
-                                      _selectedServices.removeWhere(
-                                        (s) =>
-                                            s['service_name'] ==
-                                            service['service_name'],
-                                      );
-                                    }
-                                  });
+                          return CheckboxListTile(
+                            title: Text(
+                              service['service_name'] ?? 'Unknown',
+                              style: TextStyle(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color,
+                              ),
+                            ),
+                            subtitle: Text(
+                              'Rp ${(service['price'] as num).toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                color: Colors.teal,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            value: isSelected,
+                            onChanged: (value) {
+                              setDialogState(() {
+                                if (value == true) {
+                                  _selectedServices.add(service);
+                                } else {
+                                  _selectedServices.removeWhere(
+                                    (s) =>
+                                        s['service_name'] ==
+                                        service['service_name'],
+                                  );
+                                }
+                              });
 
-                                  // Update state halaman utama juga
-                                  setState(() {});
-                                },
-                              );
+                              // Update state halaman utama
+                              setState(() {});
                             },
-                          ),
-                  ),
-                  // Footer dengan tombol konfirmasi
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: const BorderRadius.vertical(
-                        bottom: Radius.circular(16),
+                            activeColor: Colors.teal,
+                          );
+                        },
                       ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Dipilih: ${_selectedServices.length}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
-                          ),
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Selesai'),
-                        ),
-                      ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Batal',
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                     ),
                   ),
-                ],
-              ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    setState(() {});
+                  },
+                  child: const Text('Selesai'),
+                ),
+              ],
             );
           },
         );
@@ -222,8 +191,9 @@ class _AddOrderPageState extends State<AddOrderPage> {
       print('🛎️ Services: $serviceTypeStr');
       print('💰 Total Price: $_totalPrice');
 
-      // TODO: Simpan order ke database dengan serviceTypeStr dan _totalPrice
-      // const success = await _supabaseService.addOrder({
+      // ✅ TODO: Implementasi save ke Supabase dengan model Order yang sesuai
+      // Format data yang dikirim:
+      // {
       //   'customer_name': _customerNameController.text,
       //   'phone': _phoneController.text,
       //   'address': _addressController.text,
@@ -231,10 +201,11 @@ class _AddOrderPageState extends State<AddOrderPage> {
       //   'total_price': _totalPrice,
       //   'notes': _notesController.text,
       //   'status': 'pending',
-      // });
+      //   'created_at': DateTime.now().toIso8601String(),
+      // }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Order berhasil ditambahkan')),
+        const SnackBar(content: Text('✓ Order berhasil ditambahkan')),
       );
 
       // Clear form
@@ -246,7 +217,9 @@ class _AddOrderPageState extends State<AddOrderPage> {
         _selectedServices.clear();
       });
 
-      Get.back();
+      Future.delayed(const Duration(milliseconds: 500), () {
+        Get.back();
+      });
     } catch (e) {
       print('❌ Error submitting order: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -327,7 +300,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
             ),
             const SizedBox(height: 16),
 
-            // ========== PILIH LAYANAN (MULTI-SELECT) ==========
+            // ========== PILIH LAYANAN (CHECKLIST DIALOG) ==========
             Text(
               'Pilih Layanan',
               style: Theme.of(context).textTheme.titleMedium,
@@ -365,22 +338,46 @@ class _AddOrderPageState extends State<AddOrderPage> {
                 ),
               )
             else
-              ElevatedButton.icon(
-                icon: const Icon(Icons.add),
-                label: Text(
-                  _selectedServices.isEmpty
-                      ? 'Pilih Layanan (+)'
-                      : 'Tambah Layanan (+)',
-                ),
-                onPressed: _showLayananBottomSheet,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  minimumSize: const Size(double.infinity, 50),
+              InkWell(
+                onTap: _showLayananDialog,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    border: Border.all(
+                      color: Colors.teal,
+                      width: 1.5,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _selectedServices.isEmpty
+                            ? 'Klik untuk memilih layanan'
+                            : 'Dipilih: ${_selectedServices.length} layanan',
+                        style: TextStyle(
+                          color: _selectedServices.isEmpty
+                              ? Colors.grey[600]
+                              : Theme.of(context).textTheme.bodyLarge?.color,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.check_circle_outline,
+                        color: Colors.teal,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             const SizedBox(height: 16),
 
-            // ========== TAMPILKAN LAYANAN YANG DIPILIH ==========
+            // ========== TAMPILKAN LAYANAN YANG DIPILIH (CHIPS) ==========
             if (_selectedServices.isNotEmpty)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -400,10 +397,16 @@ class _AddOrderPageState extends State<AddOrderPage> {
                         return Chip(
                           label: Text(
                             '${service['service_name']} - Rp ${(service['price'] as num).toStringAsFixed(0)}',
+                            style: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black87,
+                            ),
                           ),
                           onDeleted: () => _removeSelectedService(index),
                           backgroundColor: Colors.teal[100],
-                          deleteIconColor: Colors.teal,
+                          deleteIconColor: Colors.teal[700],
                         );
                       },
                     ),
@@ -415,22 +418,31 @@ class _AddOrderPageState extends State<AddOrderPage> {
             // ========== TAMPILKAN TOTAL HARGA ==========
             if (_selectedServices.isNotEmpty)
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: Colors.teal[50],
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.teal),
+                  border: Border.all(
+                    color: Colors.teal,
+                    width: 1.5,
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Total Harga:'),
+                    Text(
+                      'Total Harga:',
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     Text(
                       'Rp ${_totalPrice.toStringAsFixed(0)}',
                       style: const TextStyle(
                         color: Colors.teal,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 18,
                       ),
                     ),
                   ],
