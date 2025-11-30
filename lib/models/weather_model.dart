@@ -1,43 +1,139 @@
 import 'dart:convert';
 import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 part 'weather_model.g.dart';
 
 @HiveType(typeId: 0)
 class WeatherModel extends HiveObject {
   @HiveField(0)
-  final String cityName;
+  final String? name;
 
   @HiveField(1)
-  final String description;
+  final MainData? main;
 
   @HiveField(2)
-  final double temperature;
+  final List<WeatherData>? weather;
 
   @HiveField(3)
-  final String iconCode;
+  final WindData? wind;
 
   WeatherModel({
-    required this.cityName,
-    required this.description,
-    required this.temperature,
-    required this.iconCode,
+    this.name,
+    this.main,
+    this.weather,
+    this.wind,
   });
 
   factory WeatherModel.fromJson(Map<String, dynamic> json) {
-    final weather = json['weather'][0];
-    final main = json['main'];
-
     return WeatherModel(
-      cityName: json['name'] ?? 'Unknown City',
-      description: weather['description'] ?? 'No description',
-      temperature: (main['temp'] as num?)?.toDouble() ?? 0.0,
-      iconCode: weather['icon'] ?? '01d',
+      name: json['name'] as String?,
+      main: json['main'] != null ? MainData.fromJson(json['main']) : null,
+      weather: json['weather'] != null
+          ? List<WeatherData>.from(
+              (json['weather'] as List).map((x) => WeatherData.fromJson(x)))
+          : null,
+      wind: json['wind'] != null ? WindData.fromJson(json['wind']) : null,
     );
   }
 
-  String getIconUrl() {
-    return 'https://openweathermap.org/img/wn/$iconCode@2x.png';
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'main': main?.toJson(),
+      'weather': weather?.map((x) => x.toJson()).toList(),
+      'wind': wind?.toJson(),
+    };
+  }
+}
+
+@HiveType(typeId: 3)
+class MainData extends HiveObject {
+  @HiveField(0)
+  final double? temp;
+
+  @HiveField(1)
+  final int? humidity;
+
+  @HiveField(2)
+  final double? pressure;
+
+  MainData({
+    this.temp,
+    this.humidity,
+    this.pressure,
+  });
+
+  factory MainData.fromJson(Map<String, dynamic> json) {
+    return MainData(
+      temp: (json['temp'] as num?)?.toDouble(),
+      humidity: json['humidity'] as int?,
+      pressure: (json['pressure'] as num?)?.toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'temp': temp,
+      'humidity': humidity,
+      'pressure': pressure,
+    };
+  }
+}
+
+@HiveType(typeId: 4)
+class WeatherData extends HiveObject {
+  @HiveField(0)
+  final String? main;
+
+  @HiveField(1)
+  final String? description;
+
+  WeatherData({
+    this.main,
+    this.description,
+  });
+
+  factory WeatherData.fromJson(Map<String, dynamic> json) {
+    return WeatherData(
+      main: json['main'] as String?,
+      description: json['description'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'main': main,
+      'description': description,
+    };
+  }
+}
+
+@HiveType(typeId: 5)
+class WindData extends HiveObject {
+  @HiveField(0)
+  final double? speed;
+
+  @HiveField(1)
+  final int? deg;
+
+  WindData({
+    this.speed,
+    this.deg,
+  });
+
+  factory WindData.fromJson(Map<String, dynamic> json) {
+    return WindData(
+      speed: (json['speed'] as num?)?.toDouble(),
+      deg: json['deg'] as int?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'speed': speed,
+      'deg': deg,
+    };
   }
 }
 

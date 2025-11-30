@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
     const Color primaryColor = Color(0xFF005f9f);
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: primaryColor,
         elevation: 0.0,
@@ -60,7 +60,7 @@ class HomeScreen extends StatelessWidget {
           ),
           _buildMenuSection(context),
           const SizedBox(height: 24),
-          _buildPromoSection(),
+          _buildPromoSection(context),
           const SizedBox(height: 24),
         ],
       ),
@@ -157,7 +157,7 @@ class HomeScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
@@ -166,12 +166,12 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Panel Kontrol',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF333333),
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
             const SizedBox(height: 16),
@@ -256,33 +256,39 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPromoSection() {
+  Widget _buildPromoSection(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Pemberitahuan Sistem',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF333333),
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           const SizedBox(height: 16),
-          _buildPromoBanner(),
+          _buildPromoBanner(context),
         ],
       ),
     );
   }
 
-  Widget _buildPromoBanner() {
+  Widget _buildPromoBanner(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.teal[50],
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.teal[900]?.withOpacity(0.3)
+            : Colors.teal[50],
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.teal.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: Row(
         children: [
@@ -299,9 +305,12 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Mesin Pengering #2 dijadwalkan maintenance sore ini pukul 16:00.',
-                  style: TextStyle(fontSize: 14, color: Colors.black54),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                  ),
                 ),
               ],
             ),
@@ -377,7 +386,10 @@ class _HomeMenuButtonState extends State<HomeMenuButton> {
             Text(
               widget.label,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 11, color: Colors.black54),
+              style: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context).textTheme.bodySmall?.color,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'dart:io';
 
 class LocationController extends GetxController {
   // Observable variables
@@ -11,7 +12,7 @@ class LocationController extends GetxController {
   final isGpsMode = true.obs;
   final locationMessage = "Belum ada data lokasi".obs;
   final isTracking = false.obs;
-  final userLocation = LatLng(0, 0).obs;
+  final userLocation = LatLng(-7.9213, 112.5992).obs;
 
   @override
   void onInit() {
@@ -30,9 +31,8 @@ class LocationController extends GetxController {
   // Toggle antara GPS (High Accuracy) dan Network (Low Accuracy)
   Future<void> toggleMode(bool value) async {
     isGpsMode.value = value;
-    locationMessage.value = value
-        ? "Mode: GPS (High Accuracy)"
-        : "Mode: Network (Low Accuracy)";
+    locationMessage.value =
+        value ? "Mode: GPS (High Accuracy)" : "Mode: Network (Low Accuracy)";
 
     // Jika sedang tracking, restart dengan mode baru
     if (isTracking.value) {
@@ -60,22 +60,34 @@ class LocationController extends GetxController {
       isTracking.value = true;
       locationMessage.value = "Tracking dimulai...";
 
-      final LocationAccuracy accuracy = isGpsMode.value
-          ? LocationAccuracy.high
-          : LocationAccuracy.low;
+      // PERBAIKAN: Konfigurasi untuk update lebih cepat di emulator
+      LocationSettings locationSettings;
+      if (Platform.isAndroid) {
+        locationSettings = AndroidSettings(
+          accuracy:
+              isGpsMode.value ? LocationAccuracy.high : LocationAccuracy.low,
+          distanceFilter: 0, // PERUBAHAN: Update setiap perubahan kecil
+          forceLocationManager: true,
+          intervalDuration: const Duration(
+              milliseconds: 500), // PERUBAHAN: Update setiap 500ms
+        );
+      } else {
+        locationSettings = LocationSettings(
+          accuracy:
+              isGpsMode.value ? LocationAccuracy.high : LocationAccuracy.low,
+          distanceFilter: 0, // PERUBAHAN: Update setiap perubahan kecil
+        );
+      }
 
       final positionStream = Geolocator.getPositionStream(
-        locationSettings: LocationSettings(
-          accuracy: accuracy,
-          distanceFilter: 0, // Update setiap perubahan
-        ),
+        locationSettings: locationSettings,
       );
 
       positionStream.listen(
         (Position position) {
           latitude.value = position.latitude;
           longitude.value = position.longitude;
-          this.accuracy.value = position.accuracy;
+          accuracy.value = position.accuracy;
           timestamp.value = position.timestamp ?? DateTime.now();
           userLocation.value = LatLng(position.latitude, position.longitude);
 
@@ -114,6 +126,8 @@ class LocationController extends GetxController {
       userLocation.value = LatLng(position.latitude, position.longitude);
     } catch (e) {
       locationMessage.value = "Error mendapat posisi: $e";
+      // Tetap gunakan default Kampus UMM Malang jika error
+      userLocation.value = LatLng(-7.9213, 112.5992);
     }
   }
 }

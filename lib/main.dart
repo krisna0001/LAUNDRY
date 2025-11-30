@@ -8,15 +8,34 @@ import 'package:laundry3b1titik0/services/theme_service.dart';
 import 'package:laundry3b1titik0/models/weather_model.dart';
 import 'package:laundry3b1titik0/models/forecast_model.dart';
 
-void main() {
-  // Pertahankan native splash selama inisialisasi
+void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  // Simulasi proses loading (opsional)
-  Future.delayed(const Duration(seconds: 2), () {
+  try {
+    await Hive.initFlutter();
+
+    // Registrasi adapter untuk model dengan typeId yang benar
+    Hive.registerAdapter(WeatherModelAdapter());
+    Hive.registerAdapter(MainDataAdapter());
+    Hive.registerAdapter(WeatherDataAdapter());
+    Hive.registerAdapter(WindDataAdapter());
+    Hive.registerAdapter(ForecastModelAdapter());
+    Hive.registerAdapter(ForecastItemAdapter());
+
+    await Supabase.initialize(
+      url: 'https://gozewnowaiddmlvjvffu.supabase.co',
+      anonKey:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvemV3bm93YWlkZG1sdmp2ZmZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NjU4MTEsImV4cCI6MjA3ODM0MTgxMX0.C8tC1RN4HssBtN-pW3QvOaYa94TrPuHIohd21TE__ME',
+    );
+
+    await Get.putAsync(() => ThemeService().init());
+
     FlutterNativeSplash.remove();
-  });
+  } catch (e) {
+    print('Error during initialization: $e');
+    FlutterNativeSplash.remove();
+  }
 
   runApp(const MyApp());
 }

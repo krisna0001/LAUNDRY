@@ -25,13 +25,11 @@ class LocationExperimentPage extends GetView<LocationController> {
             flex: 2,
             child: Obx(
               () => FlutterMap(
-                mapController: MapController(),
                 options: MapOptions(
-                  center: controller.userLocation.value,
-                  zoom: 18.0,
+                  initialCenter: controller.userLocation.value,
+                  initialZoom: 18.0,
                   interactionOptions: const InteractionOptions(
-                    flags:
-                        InteractiveFlag.pinchZoom |
+                    flags: InteractiveFlag.pinchZoom |
                         InteractiveFlag.drag |
                         InteractiveFlag.flingAnimation,
                   ),
