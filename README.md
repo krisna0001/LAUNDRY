@@ -101,6 +101,23 @@ image_picker: ^1.0.7     # Upload gambar
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 <uses-permission android:name="android.permission.INTERNET" />
 ```
+### API YANG DI GUNAKAN
+#### Open-Meteo API
+- Kegunaan: Mengambil data cuaca real-time (suhu, kelembaban, kecepatan angin) dan prakiraan cuaca tanpa memerlukan API Key.
+  Lokasi Kode: lib/controllers/delivery_controller.dart.
+
+#### NewsAPI
+  Kegunaan: Mengambil berita terkini yang relevan dengan lokasi pengguna saat ini (berdasarkan nama lokasi yang didapat dari GPS).
+  Lokasi Kode: lib/controllers/delivery_controller.dart.
+
+#### Nominatim API (OpenStreetMap)
+
+- Kegunaan: Melakukan reverse geocoding, yaitu mengubah koordinat GPS (latitude & longitude) menjadi nama lokasi atau alamat yang bisa dibaca manusia (kota, kecamatan, desa). 
+  Lokasi Kode: lib/controllers/delivery_controller.dart.
+
+#### OpenStreetMap Tile API
+
+- Kegunaan: Menyediakan gambar peta (tiles) untuk ditampilkan di layar menggunakan widget FlutterMap. 
+  Lokasi Kode: lib/screens/delivery_screen.dart, lib/pages/location_experiment_page.dart.
 
 ---
-
